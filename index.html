@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portfólio de Mateus Pereira — artista, motion designer e criador multimídia.">
+  <title>Mateus Pereira — Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       TOKENS
+       ========================================================= */
+    :root {
+      --font: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+      --ink: #fff;
+      --ink-soft: rgba(255, 255, 255, .82);
+      --ink-mute: rgba(255, 255, 255, .66);
+      --line: rgba(255, 255, 255, .14);
+      --glass: rgba(0, 0, 0, .72);
+      --tile: rgba(255, 255, 255, .05);
+      --tile-hover: rgba(255, 255, 255, .09);
+
+      --r-lg: 18px;
+      --r-md: 12px;
+      --r-sm: 8px;
+
+      --ease: cubic-bezier(.22, 1, .36, 1);        /* entradas suaves */
+      --ease-move: cubic-bezier(.65, 0, .25, 1);   /* deslocamento do título */
+
+      /* entrada dos blocos: usa `translate` (propriedade individual) para
+         não brigar com o `transform` dos efeitos de hover */
+      --reveal: opacity .8s ease-out var(--d, 0ms), translate .8s var(--ease) var(--d, 0ms);
+
+      --header-h: 88px;       /* atualizado via JS */
+      --title-img: none;      /* imagem que aparece dentro das letras dos títulos */
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      scroll-padding-top: calc(var(--header-h) + 1rem);
+    }
+
+    body {
+      font-family: var(--font);
+      color: var(--ink);
+      background: #0d0d0d;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body.locked, body.modal-open { overflow: hidden; }
+
+    :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    .site-header :focus-visible { outline-color: #000; }
+
+    img { max-width: 100%; }
+
+    /* =========================================================
+       FUNDO (uma camada por imagem, troca em corte seco)
+       O filtro vive no contêiner, então transiciona uma única vez.
+       Estado "intro" = claro e desfocado; depois = escuro e nítido.
+       `inset: -28px` evita a borda esmaecida do blur aparecer.
+       ========================================================= */
+    .backdrop {
+      position: fixed;
+      inset: -28px;
+      z-index: -2;
+      pointer-events: none;
+      filter: invert(100%) hue-rotate(0deg) blur(0px);
+      transition: filter 1.6s ease-in-out;
+    }
+    body.intro .backdrop { filter: invert(0%) hue-rotate(180deg) blur(8px); }
+
+    .backdrop-layer {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: none;            /* sempre corte seco, como quadros de lápis (inclusive na abertura) */
+    }
+    .backdrop-layer.is-on   { opacity: 1; }
+    .backdrop-layer.is-top  { z-index: 2; }
+
+    /* =========================================================
+       CABEÇALHO
+       ========================================================= */
+    .site-header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .5rem 2rem;
+      padding: .85rem 2.5rem;
+      color: #000;
+      background: rgba(255, 255, 255, .97);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, .06), 0 8px 24px rgba(0, 0, 0, .14);
+      transition: opacity .9s ease .45s, transform 1.1s var(--ease) .45s;
+    }
+    body.intro .site-header {
+      opacity: 0;
+      transform: translateY(-100%);
+      pointer-events: none;
+      transition: none;
+    }
+
+    .brand { display: flex; align-items: center; gap: .85rem; }
+    .brand img { height: 40px; width: auto; }
+    .brand h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: .02em; line-height: 1.1; color: #000; }
+    .brand p  { margin-top: .2rem; font-size: .74rem; font-weight: 500; letter-spacing: .04em; color: #555; line-height: 1.3; }
+
+    .nav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: .25rem 1.6rem; }
+    .nav-link {
+      position: relative;
+      padding: .4rem 0;
+      border: 0;
+      background: none;
+      font: 500 .95rem/1.2 var(--font);
+      color: #000;
+      opacity: .6;
+      cursor: pointer;
+      transition: opacity .25s ease;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 2px;
+      background: #000;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .35s var(--ease);
+    }
+    .nav-link:hover, .nav-link.is-current { opacity: 1; }
+    .nav-link.is-current::after { transform: scaleX(1); }
+
+    .lang {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: .4rem;
+      padding: 3px;
+      border: 1px solid rgba(0, 0, 0, .18);
+      border-radius: 999px;
+    }
+    .lang-btn {
+      padding: .45rem .7rem;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(0, 0, 0, .6);
+      font: 600 .7rem/1 var(--font);
+      letter-spacing: .08em;
+      cursor: pointer;
+      transition: background-color .2s ease, color .2s ease;
+    }
+    .lang-btn:hover  { color: #000; }
+    .lang-btn.active { background: #000; color: #fff; }
+
+    /* =========================================================
+       CONTEÚDO E SEÇÕES
+       ========================================================= */
+    .content { padding: calc(var(--header-h) + 2.5rem) 2rem 4rem; width: 100%; }
+    body.intro .content { pointer-events: none; }
+
+    section {
+      display: none;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem;
+      background: var(--glass);
+      border-radius: var(--r-lg);
+      transition: background-color 1.4s ease;
+    }
+    section.active { display: block; }
+    /* durante a abertura o painel escuro some; só o título aparece */
+    body.intro #home { background-color: transparent; }
+
+    p { color: var(--ink-soft); line-height: 1.7; }
+
+    /* ---- entrada dos blocos ---- */
+    .fade-in { opacity: 0; translate: 0 14px; transition: var(--reveal); }
+    .fade-in.visible { opacity: 1; translate: 0 0; }
+
+    /* ---- títulos de seção: letras "janela" para a arte ----
+       Declarado DEPOIS de .fade-in (mesma especificidade) para que a
+       transição de filter não seja sobrescrita. */
+    .section-title {
+      margin-bottom: 2rem;
+      font-size: clamp(1.4rem, 5.2vw, 2rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      text-wrap: balance;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      background-image: var(--title-img);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: invert(0%) hue-rotate(180deg);
+      transition: var(--reveal), filter 1.6s ease-in-out;
+    }
+    body.intro .section-title { filter: invert(100%) hue-rotate(0deg); }
+
+    /* =========================================================
+       ABERTURA — o próprio título da Home é o elemento animado.
+       Não há clone nem troca no final: ele nasce no centro da tela,
+       ampliado, e assenta na posição final.
+       --intro-x / --intro-y / --intro-s são calculados pelo JS.
+       ========================================================= */
+    #home-title {
+      transform-origin: 0 0;
+      transition: transform 1.7s var(--ease-move), opacity .8s ease-out, filter 1.6s ease-in-out;
+    }
+    body.intro #home-title {
+      opacity: 0;
+      transform: translate3d(var(--intro-x, 0px), calc(var(--intro-y, 0px) + 36px), 0) scale(var(--intro-s, 1));
+      transition: none;
+    }
+    body.intro.intro-show #home-title {
+      opacity: 1;
+      transform: translate3d(var(--intro-x, 0px), var(--intro-y, 0px), 0) scale(var(--intro-s, 1));
+      transition: transform 1.3s var(--ease), opacity 1s ease-out, filter 1.6s ease-in-out;
+    }
+
+    /* =========================================================
+       HOME
+       ========================================================= */
+    .hero-statement {
+      max-width: 900px;
+      margin-bottom: 1.5rem;
+      font-size: clamp(1.5rem, 3.4vw, 2.35rem);
+      font-weight: 600;
+      line-height: 1.22;
+      letter-spacing: -.015em;
+      text-wrap: balance;
+      color: #fff;
+    }
+
+    .hero-badges { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .hero-badge {
+      padding: .4rem .95rem;
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .1);
+      font-size: .85rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      color: #fff;
+    }
+
+    .bento-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin: 2.5rem 0 3rem; }
+    .bento-item {
+      padding: 2rem 2.25rem;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--tile);
+    }
+    .bento-wide { grid-column: span 2; }
+    .bento-title { margin-bottom: .75rem; font-size: 1.25rem; font-weight: 700; color: #fff; }
+    .bento-text  { max-width: 68ch; text-wrap: pretty; }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .btn-primary, .btn-secondary {
+      padding: .85rem 1.8rem;
+      border-radius: 999px;
+      font: 700 .95rem/1.2 var(--font);
+      cursor: pointer;
+      transition: transform .25s var(--ease), background-color .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .btn-primary   { border: 1px solid #fff; background: #fff; color: #000; }
+    .btn-secondary { border: 1px solid rgba(255, 255, 255, .4); background: transparent; color: #fff; font-weight: 600; }
+
+    /* =========================================================
+       CARTÕES E BLOCOS COM HOVER
+       (.lift = entrada + hover sem conflito de transição)
+       ========================================================= */
+    .lift {
+      transition: var(--reveal),
+                  transform .3s var(--ease), background-color .3s ease,
+                  border-color .3s ease, box-shadow .3s ease;
+    }
+    @media (hover: hover) {
+      .lift:hover { transform: translateY(-3px); background-color: var(--tile-hover); border-color: rgba(255, 255, 255, .24); }
+      .btn-primary:hover   { background: #e9e9e9; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(255, 255, 255, .18); }
+      .btn-secondary:hover { border-color: #fff; background: rgba(255, 255, 255, .1); transform: translateY(-2px); }
+    }
+
+    /* =========================================================
+       PROJETOS
+       ========================================================= */
+    .project-intro {
+      margin: 2rem 0 1.5rem;
+      padding: 1.5rem 1.75rem;
+      border-left: 3px solid rgba(255, 255, 255, .7);
+      border-radius: 0 var(--r-sm) var(--r-sm) 0;
+      background: rgba(255, 255, 255, .06);
+    }
+    .project-intro.spaced { margin-top: 3rem; }
+    .project-intro h3 { margin-bottom: .5rem; font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
+    .project-intro p  { max-width: 72ch; text-wrap: pretty; }
+
+    .gif-pipeline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 1.5rem 0 2.5rem; }
+    .gif-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: rgba(0, 0, 0, .35);
+    }
+    .gif-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, .2);
+    }
+    .gif-card .caption { margin-top: .9rem; text-align: center; }
+    .gif-card h4 { font-size: 1rem; font-weight: 700; line-height: 1.35; }
+    .gif-card p  { margin-top: .25rem; font-size: .86rem; color: var(--ink-mute); line-height: 1.5; }
+
+    .pap-card { max-width: 520px; margin: 1.5rem auto 0; padding: 1.5rem; }
+    .pap-embed, .pap-facade {
+      display: block;
+      width: min(100%, 340px);
+      aspect-ratio: 9 / 16;
+      border: 0;
+      border-radius: var(--r-md);
+      background: #000;
+    }
+    .pap-facade { position: relative; padding: 0; overflow: hidden; cursor: pointer; }
+    .pap-facade img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 0; background: #000; transition: transform .6s var(--ease); }
+    .pap-play {
+      position: absolute; inset: 0; margin: auto;
+      width: 68px; height: 68px; border-radius: 50%;
+      background: rgba(255, 255, 255, .94);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
+      transition: transform .3s var(--ease);
+    }
+    .pap-play::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      transform: translate(-35%, -50%);
+      border-style: solid; border-width: 13px 0 13px 22px;
+      border-color: transparent transparent transparent #000;
+    }
+    @media (hover: hover) {
+      .pap-facade:hover img { transform: scale(1.03); }
+      .pap-facade:hover .pap-play { transform: scale(1.08); }
+    }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .text-link {
+      display: inline-block;
+      margin-top: .7rem;
+      font-size: .9rem;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: rgba(255, 255, 255, .5);
+      transition: text-decoration-color .2s ease;
+    }
+    .text-link:hover { text-decoration-color: #fff; }
+    .project-meta { font-size: .92rem; color: var(--ink-mute); }
+
+    .inspectable { cursor: zoom-in; }
+
+    .artwork-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .artwork-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: rgba(0, 0, 0, .35);
+    }
+    .artwork-card img { display: block; width: 100%; height: 250px; object-fit: contain; background: rgba(0, 0, 0, .2); }
+    .artwork-card .caption { padding: 1.2rem 1.3rem 1.4rem; }
+    .artwork-card h4 { margin-bottom: .35rem; font-size: 1.05rem; font-weight: 700; }
+    .artwork-card p  { font-size: .95rem; line-height: 1.55; }
+
+    .prototype { margin-top: 3rem; padding-top: 2.5rem; border-top: 1px solid rgba(255, 255, 255, .2); }
+    .prototype img { display: block; width: 100%; max-width: 1000px; height: auto; margin: 0 auto; border-radius: var(--r-md); background: rgba(255, 255, 255, .06); }
+    .prototype-caption { max-width: 1000px; margin: 1.25rem auto 0; }
+    .prototype-caption h3 { margin-bottom: .6rem; font-size: 1.3rem; font-weight: 700; }
+    .prototype-caption p  { margin-bottom: .7rem; max-width: 72ch; text-wrap: pretty; }
+    .prototype-caption .prototype-note { font-size: .95rem; color: var(--ink-mute); }
+    .prototype--narrow img, .prototype--narrow .prototype-caption { max-width: 760px; }
+
+    /* =========================================================
+       SOBRE
+       ========================================================= */
+    .about-subtitle {
+      margin: 2.5rem 0 .5rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .contact-block .about-subtitle { margin-top: 0; }
+
+    .role   { display: block; margin-bottom: .2rem; font-size: 1.02rem; font-weight: 700; color: #fff; }
+    .period { display: block; font-size: .92rem; color: var(--ink-mute); }
+    .meta-line { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; font-size: .92rem; color: var(--ink-mute); }
+
+    .experience-list { margin: 1rem 0 2rem; padding-left: 1.4rem; list-style: none; }
+    .experience-list li { position: relative; margin: .6rem 0; line-height: 1.65; color: var(--ink-soft); }
+    .experience-list li::before { content: ''; position: absolute; left: -1.1rem; top: .75em; width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .55); }
+
+    .skills-block { margin-top: 3rem; padding: 1.75rem; border-radius: var(--r-md); background: rgba(255, 255, 255, .06); }
+    .skills-block h3 { margin-bottom: 1.5rem; font-size: 1.35rem; font-weight: 700; }
+    .skills-category { margin-bottom: 1.6rem; }
+    .skills-category:last-child { margin-bottom: 0; }
+    .skills-category h4 { margin-bottom: .75rem; padding-bottom: .35rem; border-bottom: 1px solid rgba(255, 255, 255, .1); font-size: 1rem; font-weight: 600; color: var(--ink-soft); }
+    .skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem; list-style: none; }
+    .skill {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .75rem 1rem;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: var(--r-sm);
+      background: rgba(0, 0, 0, .22);
+      line-height: 1.4;
+    }
+    .skill-name  { font-size: .95rem; font-weight: 600; color: #fff; }
+    .skill-level { font-size: .8rem; color: var(--ink-mute); white-space: nowrap; }
+
+    /* =========================================================
+       CONTATO
+       ========================================================= */
+    .contact-block { scroll-margin-top: 5rem; }
+    .contact-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: .9rem; margin: 1.25rem 0 .5rem; list-style: none; }
+    .contact-link {
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+      padding: 1.1rem 1.4rem;
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--tile);
+      color: inherit;
+      text-decoration: none;
+    }
+    .contact-label { font-size: .8rem; font-weight: 500; color: var(--ink-mute); }
+    .contact-value { font-size: 1.05rem; font-weight: 600; color: #fff; overflow-wrap: anywhere; }
+
+    /* =========================================================
+       MODAL DE IMAGEM
+       ========================================================= */
+    .image-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: rgba(0, 0, 0, .9);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease, visibility 0s linear .3s;
+    }
+    .image-modal.active { opacity: 1; visibility: visible; transition-delay: 0s; }
+    .image-modal img {
+      max-width: 90vw;
+      max-height: 88vh;
+      object-fit: contain;
+      border-radius: var(--r-sm);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+      transform: scale(.96);
+      transition: transform .35s var(--ease);
+    }
+    .image-modal.active img { transform: scale(1); }
+    .image-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 22px;
+      width: 48px;
+      height: 48px;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font: 400 2.5rem/1 var(--font);
+      cursor: pointer;
+      transition: color .2s ease;
+    }
+    .image-modal-close:hover { color: #aaa; }
+
+    /* =========================================================
+       RESPONSIVO
+       ========================================================= */
+    @media (max-width: 900px) {
+      .site-header { padding: .75rem 1.25rem; }
+      .brand h1 { font-size: 1.2rem; }
+      .brand img { height: 32px; }
+      .brand p { font-size: .68rem; }
+      .nav { justify-content: flex-start; gap: .1rem 1.1rem; }
+      .nav-link { font-size: .88rem; }
+      .content { padding-left: 1rem; padding-right: 1rem; }
+      section { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      .bento-grid, .gif-pipeline-grid { grid-template-columns: 1fr; }
+      .bento-wide { grid-column: span 1; }
+      .bento-item { padding: 1.5rem; }
+    }
+    @media (max-width: 500px) {
+      .skills-grid { grid-template-columns: 1fr; }
+      .lang { margin-left: 0; }
+    }
+
+    /* =========================================================
+       MOVIMENTO REDUZIDO
+       ========================================================= */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: .01ms !important;
+        transition-delay: 0s !important;
+        animation-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="intro locked">
+  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
+
+  <!-- MODAL DE INSPEÇÃO DE IMAGENS -->
+  <div class="image-modal" id="imageModal" role="dialog" aria-modal="true" aria-label="Image viewer" aria-hidden="true">
+    <button class="image-modal-close" id="modalClose" type="button" aria-label="Close">&times;</button>
+    <img id="modalImg" alt="">
+  </div>
+
+  <header class="site-header" id="main-header">
+    <div class="brand">
+      <img src="assets/LOGO.png" alt="Mateus logo">
+      <div>
+        <h1>Mateus Pereira</h1>
+        <p>Artist · Motion Designer · Multimedia</p>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <button class="nav-link is-current" type="button" data-target="home" aria-current="page">Home</button>
+      <button class="nav-link" type="button" data-target="animations">Motion Design</button>
+      <button class="nav-link" type="button" data-target="artworks">Artworks</button>
+      <button class="nav-link" type="button" data-target="about">About</button>
+      <div class="lang" role="group" aria-label="Language">
+        <button class="lang-btn active" type="button" data-lang="pt-BR" aria-pressed="true">PT</button>
+        <button class="lang-btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="content" id="main-content">
+
+    <!-- HOME -->
+    <section id="home" class="active">
+      <h2 id="home-title" class="section-title">Welcome to my portfolio</h2>
+
+      <p class="hero-statement fade-in">Crafting visual stories, dynamic motion and immersive experiences.</p>
+
+      <div class="hero-badges fade-in">
+        <span class="hero-badge">Animation &amp; Motion</span>
+        <span class="hero-badge">Character Design</span>
+        <span class="hero-badge">Video Editing</span>
+        <span class="hero-badge">Journalism &amp; Media</span>
+      </div>
+
+      <div class="bento-grid">
+        <article class="bento-item bento-wide fade-in lift">
+          <h3 class="bento-title">Who I Am</h3>
+          <p class="bento-text">I’m Mateus Pereira, a 19-year-old multimedia creator based between Portugal and Brazil. Currently studying Journalism at Cásper Líbero, I bridge creative art with powerful narrative communication.</p>
+        </article>
+
+        <article class="bento-item fade-in lift">
+          <h3 class="bento-title">What I Do</h3>
+          <p class="bento-text">From 2D character animation and motion graphics to institutional video editing and visual identity, I create compelling visual media tailored for engagement.</p>
+        </article>
+
+        <article class="bento-item fade-in lift">
+          <h3 class="bento-title">Background</h3>
+          <p class="bento-text">Formed in Multimedia at ESAB in Coimbra and experienced as a Motion Designer &amp; Video Editor at TUMO Coimbra, bringing real-world creative project execution.</p>
+        </article>
+      </div>
+
+      <div class="hero-actions fade-in">
+        <button class="btn-primary" type="button" data-target="animations">Explore Work</button>
+        <button class="btn-secondary" type="button" data-target="about" data-anchor="contact-info">Get in Touch</button>
+      </div>
+    </section>
+
+    <!-- MOTION DESIGN -->
+    <section id="animations">
+      <h2 class="section-title fade-in">Motion Design</h2>
+
+      <div class="project-intro fade-in">
+        <h3>25 de Abril — Carnation Animation Process</h3>
+        <p>Animation of a Carnation developed at TUMO Coimbra to commemorate the 25th of April Revolution in Portugal. Designed to be displayed in a carousel exhibit, this series illustrates the frame-by-frame evolution of the flower’s blooming sequence.</p>
+      </div>
+
+      <div class="gif-pipeline-grid fade-in">
+        <article class="gif-card lift">
+          <img class="inspectable" data-gif="assets/flor1.gif" alt="Carnation Animation Step 1 - Line art sketch" decoding="async">
+          <div class="caption">
+            <h4>Stage 1: Line Art &amp; Keyframes</h4>
+            <p>Initial rough animation and timing breakdown of the carnation.</p>
+          </div>
+        </article>
+
+        <article class="gif-card lift">
+          <img class="inspectable" data-gif="assets/flor2.gif" alt="Carnation Animation Step 2 - Color and Movement" decoding="async">
+          <div class="caption">
+            <h4>Stage 2: Color &amp; In-Betweening</h4>
+            <p>Adding color fill and smoothing out the frame transitions.</p>
+          </div>
+        </article>
+
+        <article class="gif-card lift">
+          <img class="inspectable" data-gif="assets/flor3.gif" alt="Carnation Animation Step 3 - Final render" decoding="async">
+          <div class="caption">
+            <h4>Stage 3: Final Render</h4>
+            <p>Complete loop with detail, shown in the carousel exhibit.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="project-intro spaced fade-in">
+        <h3>PAP — Prova de Aptidão Profissional</h3>
+        <p>Final animation project developed during the 12º PM at Escola Secundária Avelar Brotero, as part of my Prova de Aptidão Profissional (PAP).</p>
+      </div>
+
+      <div class="gif-card pap-card fade-in">
+        <button class="pap-facade" id="papFacade" type="button" data-yt="2DZUFdk5su8">
+          <img src="assets/papuda.png" alt="" width="516" height="920" loading="lazy" decoding="async">
+          <span class="pap-play" aria-hidden="true"></span>
+          <span class="sr-only">Play video</span>
+        </button>
+        <div class="caption" style="margin-top: 1.2rem;">
+          <h4>Final Motion Reel</h4>
+          <p class="project-meta">Final animation · 12º PM</p>
+          <a class="text-link" href="https://www.youtube.com/shorts/2DZUFdk5su8" target="_blank" rel="noopener">Watch on YouTube</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARTWORKS -->
+    <section id="artworks">
+      <h2 class="section-title fade-in">Artworks</h2>
+
+      <div class="project-intro fade-in">
+        <h3>TUMO Coimbra — Character Design</h3>
+        <p>Character designs created during my time at TUMO Coimbra for different educational areas of the center. The characters were developed as a cohesive visual set, with variations and poses designed to represent each area.</p>
+      </div>
+
+      <div class="artwork-grid">
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/poseanimacao.png" alt="TUMO Coimbra character for Animation"><div class="caption"><h4>Animation</h4><p>Character created for the Animation area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posecinema.png" alt="TUMO Coimbra character for Cinema"><div class="caption"><h4>Cinema</h4><p>Character created for the Cinema area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posecinema2.png" alt="Second TUMO Coimbra Cinema character"><div class="caption"><h4>Cinema — Variation</h4><p>Additional character design for the Cinema area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posedesign.png" alt="TUMO Coimbra character for Design"><div class="caption"><h4>Design</h4><p>Character created for the Design area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posedesign2.png" alt="Second TUMO Coimbra Design character"><div class="caption"><h4>Design — Variation</h4><p>Additional character design for the Design area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posefotografia.png" alt="TUMO Coimbra character for Photography"><div class="caption"><h4>Photography</h4><p>Character created for the Photography area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posefotografia2.png" alt="Second TUMO Coimbra Photography character"><div class="caption"><h4>Photography — Variation</h4><p>Additional character design for the Photography area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posejogos.png" alt="TUMO Coimbra character for Games"><div class="caption"><h4>Games</h4><p>Character created for the Games area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posejogos2.png" alt="Second TUMO Coimbra Games character"><div class="caption"><h4>Games — Variation</h4><p>Additional character design for the Games area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/posemusica.png" alt="TUMO Coimbra character for Music"><div class="caption"><h4>Music</h4><p>Character created for the Music area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/poseprogram.png" alt="TUMO Coimbra character for Programming"><div class="caption"><h4>Programming</h4><p>Character created for the Programming area.</p></div></article>
+        <article class="artwork-card fade-in lift"><img class="inspectable" loading="lazy" decoding="async" src="assets/Poserobotica.png" alt="TUMO Coimbra character for Robotics"><div class="caption"><h4>Robotics</h4><p>Character created for the Robotics area.</p></div></article>
+      </div>
+
+      <div class="prototype fade-in">
+        <img class="inspectable" loading="lazy" decoding="async" src="assets/posestotais.png" alt="Prototype sheet showing the first versions of the TUMO Coimbra characters">
+        <div class="prototype-caption">
+          <h3>Prototype &amp; First Version</h3>
+          <p>This image shows the first prototypes of the characters, before the final designs presented above. It records the initial visual exploration and the direction from which the character set was developed.</p>
+          <p class="prototype-note">The Photography character was developed last and had a shorter production timeframe, which is why its development is less represented in the prototype stage.</p>
+        </div>
+      </div>
+
+      <div class="prototype prototype--narrow fade-in">
+        <img class="inspectable" loading="lazy" decoding="async" src="assets/cravos.png" alt="TUMO Coimbra 25 de Abril celebration promotional artwork">
+        <div class="prototype-caption">
+          <h3>25 de Abril — TUMO Coimbra</h3>
+          <p>Promotional artwork created for the 25th of April celebration at TUMO Coimbra.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <h2 class="section-title fade-in">About &amp; Background</h2>
+
+      <div id="contact-info" class="contact-block">
+        <h3 class="about-subtitle fade-in">Contact</h3>
+        <ul class="contact-list">
+          <li class="fade-in"><a class="contact-link lift" href="mailto:mateuscostap.2007@gmail.com"><span class="contact-label">Email</span><span class="contact-value">mateuscostap.2007@gmail.com</span></a></li>
+          <li class="fade-in"><a class="contact-link lift" href="tel:+5584999182321"><span class="contact-label">Phone</span><span class="contact-value">+55 (84) 99918-2321</span></a></li>
+        </ul>
+      </div>
+
+      <h3 class="about-subtitle fade-in">Experience</h3>
+      <div class="project-intro fade-in">
+        <h3>TUMO Coimbra</h3>
+        <strong class="role">Motion Designer &amp; Video Editor</strong>
+        <span class="period">March 2025 – July 2025</span>
+      </div>
+      <ul class="experience-list fade-in">
+        <li>Participated in creative meetings to define content and events.</li>
+        <li>Created animations and videos for institutional campaigns.</li>
+        <li>Developed visual content for educational projects.</li>
+        <li>Produced 2D animations applied to teaching.</li>
+      </ul>
+      <div class="project-intro fade-in">
+        <h3>Selected project in this portfolio</h3>
+        <p>The character designs shown in Artworks were created for different educational areas of TUMO Coimbra, forming a cohesive visual set of characters and poses.</p>
+      </div>
+
+      <h3 class="about-subtitle fade-in" style="margin-top: 3rem;">Education</h3>
+      <div class="project-intro fade-in">
+        <h3>Faculdade Cásper Líbero</h3>
+        <strong class="role">Bachelor's Degree in Journalism</strong>
+        <div class="meta-line"><span>São Paulo, Brazil</span><span>2026–2029</span><span>Ongoing</span></div>
+      </div>
+      <div class="project-intro fade-in">
+        <h3>Escola Secundária Avelar Brotero — ESAB</h3>
+        <strong class="role">Professional Course in Multimedia</strong>
+        <div class="meta-line"><span>Coimbra, Portugal</span><span>2022–2025</span></div>
+      </div>
+
+      <div class="skills-block fade-in">
+        <h3>Software &amp; Tools</h3>
+
+        <div class="skills-category">
+          <h4>Adobe Creative Cloud</h4>
+          <ul class="skills-grid">
+            <li class="skill"><span class="skill-name">Adobe Photoshop</span><span class="skill-level">Intermediate</span></li>
+            <li class="skill"><span class="skill-name">Adobe Illustrator</span><span class="skill-level">Basic</span></li>
+            <li class="skill"><span class="skill-name">Adobe After Effects</span><span class="skill-level">Basic</span></li>
+            <li class="skill"><span class="skill-name">Adobe Premiere</span><span class="skill-level">Basic</span></li>
+          </ul>
+        </div>
+
+        <div class="skills-category">
+          <h4>Artificial Intelligence</h4>
+          <ul class="skills-grid">
+            <li class="skill"><span class="skill-name">NotebookLM</span><span class="skill-level">Intermediate</span></li>
+            <li class="skill"><span class="skill-name">Google Gemini</span><span class="skill-level">Intermediate</span></li>
+            <li class="skill"><span class="skill-name">ChatGPT</span><span class="skill-level">Intermediate</span></li>
+          </ul>
+        </div>
+
+        <div class="skills-category">
+          <h4>Programming &amp; Web</h4>
+          <ul class="skills-grid">
+            <li class="skill"><span class="skill-name">HTML</span><span class="skill-level">Basic</span></li>
+            <li class="skill"><span class="skill-name">CSS</span><span class="skill-level">Basic</span></li>
+            <li class="skill"><span class="skill-name">JavaScript</span><span class="skill-level">Basic</span></li>
+            <li class="skill"><span class="skill-name">SQL</span><span class="skill-level">Basic</span></li>
+          </ul>
+        </div>
+
+        <div class="skills-category">
+          <h4>Microsoft Office</h4>
+          <ul class="skills-grid">
+            <li class="skill"><span class="skill-name">Word</span><span class="skill-level">Intermediate</span></li>
+            <li class="skill"><span class="skill-name">PowerPoint</span><span class="skill-level">Intermediate</span></li>
+            <li class="skill"><span class="skill-name">Excel</span><span class="skill-level">Basic</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       SCRIPT PRINCIPAL: fundo, abertura, navegação, modal
+       ========================================================= -->
+  <script>
+  (() => {
+    'use strict';
+
+    const $  = (sel, ctx = document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const root = document.documentElement;
+    const body = document.body;
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // A página sempre começa no topo
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+
+    /* ---------------------------------------------------------
+       FUNDO — os três desenhos alternam sozinhos, em CORTE SECO
+       (sem fade), como quadros de uma animação a lápis ("boil").
+       Para ajustar a velocidade, mude BACKDROP_FRAME_MS
+       (menor = mais rápido; ~120–250 ms funciona bem).
+
+       Para não piscar:
+       · cada imagem tem a sua própria camada, com o background
+         definido uma única vez (nada é trocado em camadas vivas);
+       · o ciclo só começa quando as três imagens estão decodificadas;
+       · a nova camada sobe para o topo já opaca, e só depois de
+         ela ter sido pintada a antiga é desligada, então nunca
+         existe um quadro "vazio" entre as duas;
+       · não há transições nem timers competindo (usa um único
+         requestAnimationFrame, que pausa sozinho em aba oculta).
+       --------------------------------------------------------- */
+    const BACKDROPS = ['assets/imagem4.png', 'assets/imagem5.png', 'assets/imagem6.png'];
+    const BACKDROP_FRAME_MS = 300;
+
+    const backdropEl = $('#backdrop');
+    const layers = BACKDROPS.map(src => {
+      const el = document.createElement('div');
+      el.className = 'backdrop-layer';
+      el.style.backgroundImage = `url("${src}")`;
+      backdropEl.appendChild(el);
+      return el;
+    });
+
+    const decoded = new Map();                      // índice -> promessa de imagem decodificada
+    const keepAlive = [];                           // mantém os objetos Image na memória
+    function whenDecoded(index) {
+      if (!decoded.has(index)) {
+        const img = new Image();
+        img.src = BACKDROPS[index];
+        keepAlive.push(img);
+        decoded.set(index, (img.decode ? img.decode() : new Promise(r => { img.onload = img.onerror = r; })).catch(() => {}));
+      }
+      return decoded.get(index);
+    }
+
+    let shownIndex = -1;                            // fundo realmente visível
+
+    function showBackdrop(index) {
+      if (index === shownIndex) return;
+      shownIndex = index;
+
+      // as letras dos títulos usam a mesma imagem do fundo
+      root.style.setProperty('--title-img', `url("${BACKDROPS[index]}")`);
+
+      layers.forEach(layer => layer.classList.remove('is-top'));
+      const next = layers[index];
+      next.classList.add('is-top', 'is-on');
+
+      // desliga as outras só depois que a nova já foi pintada
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        layers.forEach((layer, i) => {
+          if (i !== shownIndex) layer.classList.remove('is-on');
+        });
+      }));
+    }
+
+    let cycling = false;
+    function startBackdropCycle() {
+      if (cycling || reduceMotion) return;          // movimento reduzido: fica parado
+      cycling = true;
+      let last = performance.now();
+      const tick = now => {
+        if (now - last >= BACKDROP_FRAME_MS) {
+          last = now;
+          showBackdrop((shownIndex + 1) % layers.length);
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
+    const loadImage = src => new Promise(resolve => {
+      const img = new Image();
+      img.onload = img.onerror = () => resolve();
+      img.src = src;
+    });
+
+    /* ---------------------------------------------------------
+       ALTURA DO CABEÇALHO — evita que o conteúdo fique por baixo
+       dele quando o menu quebra em duas linhas no celular
+       --------------------------------------------------------- */
+    const header = $('#main-header');
+    const syncHeaderHeight = () => root.style.setProperty('--header-h', `${header.offsetHeight}px`);
+    syncHeaderHeight();
+    new ResizeObserver(syncHeaderHeight).observe(header);
+
+    /* ---------------------------------------------------------
+       ENTRADA DOS BLOCOS (fade-in)
+       --------------------------------------------------------- */
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.filter(e => e.isIntersecting).forEach((entry, i) => {
+        // blocos que entram juntos aparecem em cascata curta
+        entry.target.style.setProperty('--d', reduceMotion ? '0ms' : `${Math.min(i, 6) * 70}ms`);
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -4% 0px' });
+
+    const observeFadeIns = ctx => $$('.fade-in:not(.visible)', ctx).forEach(el => revealObserver.observe(el));
+
+    /* ---------------------------------------------------------
+       GIFs — reiniciam do primeiro quadro a cada visita, sem
+       baixar o arquivo de novo (usa uma cópia em memória)
+       --------------------------------------------------------- */
+    const gifs = $$('img[data-gif]');
+    async function gifUrl(img) {
+      if (location.protocol === 'file:') return `${img.dataset.gif}?t=${Date.now()}`;   // fetch não funciona em arquivo local
+      try {
+        if (!img._blob) img._blob = await (await fetch(img.dataset.gif)).blob();
+        return URL.createObjectURL(img._blob);
+      } catch {
+        return `${img.dataset.gif}?t=${Date.now()}`;   // ex.: abrindo o arquivo direto do disco
+      }
+    }
+    function restartGifs() {
+      gifs.forEach(async (img, i) => {
+        const url = await gifUrl(img);
+        setTimeout(() => {
+          const old = img.src;
+          img.src = url;
+          if (old.startsWith('blob:')) URL.revokeObjectURL(old);
+        }, i * 200);
+      });
+    }
+
+    /* ---------------------------------------------------------
+       NAVEGAÇÃO
+       --------------------------------------------------------- */
+    const sections = $$('main section');
+    const navLinks = $$('.nav-link');
+
+    const scrollToAnchor = anchor => {
+      const el = anchor && document.getElementById(anchor);
+      if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }));
+    };
+
+    function showSection(id, anchor) {
+      if (body.classList.contains('intro')) return;
+      const next = document.getElementById(id);
+      if (!next) return;
+
+      if (next.classList.contains('active')) {      // já está nela: vai ao ponto pedido ou volta ao topo
+        if (anchor) scrollToAnchor(anchor);
+        else window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+        return;
+      }
+
+      sections.forEach(sec => sec.classList.toggle('active', sec === next));
+      navLinks.forEach(link => {
+        const on = link.dataset.target === id;
+        link.classList.toggle('is-current', on);
+        if (on) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+      });
+
+      window.scrollTo(0, 0);
+
+      $$('.fade-in', next).forEach(el => { el.classList.remove('visible'); el.style.removeProperty('--d'); });
+      void next.offsetHeight;                       // fixa o estado "escondido" antes de animar
+      observeFadeIns(next);
+
+      if (id === 'animations') restartGifs();
+      scrollToAnchor(anchor);
+    }
+
+    $$('[data-target]').forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.target, btn.dataset.anchor)));
+
+    /* ---------------------------------------------------------
+       ABERTURA
+       O título da Home é medido, posicionado no centro da tela
+       (ampliado) e depois solto para a posição real. Um único
+       elemento, uma única transição: sem clone, sem troca final.
+       --------------------------------------------------------- */
+    const title = $('#home-title');
+
+    function measureIntro() {
+      title.style.transition = 'none';
+      title.style.transform = 'none';
+      const box = title.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      const text = range.getBoundingClientRect();
+      title.style.transform = '';
+      title.style.transition = '';
+
+      const vw = root.clientWidth;
+      const vh = window.innerHeight;
+      const scale = reduceMotion ? 1 : Math.max(1, Math.min(2.25, (vw * 0.88) / text.width));
+
+      // posição que centraliza o texto (já ampliado) na tela
+      const left = (vw - text.width * scale) / 2;
+      const top  = (vh - text.height * scale) / 2;
+      const x = left - box.left - scale * (text.left - box.left);
+      const y = top  - box.top  - scale * (text.top  - box.top);
+
+      root.style.setProperty('--intro-s', scale.toFixed(4));
+      root.style.setProperty('--intro-x', `${x.toFixed(1)}px`);
+      root.style.setProperty('--intro-y', `${y.toFixed(1)}px`);
+    }
+
+    async function runIntro() {
+      // a imagem das letras já fica definida; a camada de fundo só surge quando tudo estiver pronto
+      root.style.setProperty('--title-img', `url("${BACKDROPS[0]}")`);
+
+      // espera fonte + primeira imagem (com limite), para não haver "salto" depois
+      const fontReady = (document.fonts && document.fonts.load)
+        ? document.fonts.load('700 32px Montserrat', 'Bem-vindo ao meu portfólio').catch(() => {})
+        : Promise.resolve();
+      await Promise.all([
+        Promise.race([fontReady, wait(2500)]),
+        Promise.race([loadImage(BACKDROPS[0]), wait(3000)])
+      ]);
+
+      syncHeaderHeight();
+      measureIntro();
+      const onResize = () => measureIntro();
+      window.addEventListener('resize', onResize);
+
+      // fundo surge e o título sobe ao mesmo tempo
+      whenDecoded(0).then(() => showBackdrop(0));
+      // o ciclo já corre durante a abertura, assim que as três imagens estão decodificadas
+      Promise.all(BACKDROPS.map((_, i) => whenDecoded(i))).then(startBackdropCycle);
+      requestAnimationFrame(() => requestAnimationFrame(() => body.classList.add('intro-show')));
+
+      await wait(reduceMotion ? 400 : 2700);        // tempo para ler o título
+
+      // revela: título assenta, fundo escurece, painel e cabeçalho entram
+      window.removeEventListener('resize', onResize);
+      body.classList.remove('intro-show', 'intro');
+      setTimeout(() => observeFadeIns($('#home')), reduceMotion ? 0 : 500);
+      setTimeout(() => body.classList.remove('locked'), reduceMotion ? 0 : 1700);
+
+    }
+
+    runIntro();
+
+    /* ---------------------------------------------------------
+       VÍDEO DA PAP (YouTube)
+       Hospedado (http/https): troca a capa pelo player.
+       Aberto direto do disco (file://): o YouTube recusa players
+       embutidos, então abre o vídeo em uma nova aba.
+       --------------------------------------------------------- */
+    const papFacade = $('#papFacade');
+    papFacade.addEventListener('click', () => {
+      const id = papFacade.dataset.yt;
+      if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+        window.open(`https://www.youtube.com/shorts/${id}`, '_blank', 'noopener');
+        return;
+      }
+      const frame = document.createElement('iframe');
+      frame.className = 'pap-embed';
+      frame.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+      frame.title = 'PAP — Final Motion Reel';
+      frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      frame.allowFullscreen = true;
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      papFacade.replaceWith(frame);
+    });
+
+    /* ---------------------------------------------------------
+       MODAL DE IMAGEM
+       --------------------------------------------------------- */
+    const modal = $('#imageModal');
+    const modalImg = $('#modalImg');
+    const modalClose = $('#modalClose');
+    let lastFocus = null;
+
+    function openModal(img) {
+      lastFocus = document.activeElement;
+      modalImg.src = img.currentSrc || img.src;
+      modalImg.alt = img.alt;
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      body.classList.add('modal-open');
+      modalClose.focus();
+    }
+
+    function closeModal() {
+      if (!modal.classList.contains('active')) return;
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      body.classList.remove('modal-open');
+      setTimeout(() => { if (!modal.classList.contains('active')) modalImg.removeAttribute('src'); }, 350);
+      if (lastFocus) lastFocus.focus();
+    }
+
+    $$('.inspectable').forEach(img => {
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
+      img.addEventListener('click', () => openModal(img));
+      img.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(img); }
+      });
+    });
+
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Tab' && modal.classList.contains('active')) { e.preventDefault(); modalClose.focus(); }
+    });
+  })();
+  </script>
+
+  <!-- =========================================================
+       SCRIPT DE IDIOMA (PT / EN)
+       O HTML está em inglês; o dicionário traduz para português.
+       ========================================================= -->
+  <script>
+  (() => {
+    const PT = {
+      "Home": "Início",
+      "Motion Design": "Motion Design",
+      "Artworks": "Artes",
+      "About": "Sobre",
+      "About & Background": "Sobre & Trajetória",
+      "Contact": "Contato",
+      "Crafting visual stories, dynamic motion and immersive experiences.": "Criando histórias visuais, animações dinâmicas e experiências envolventes.",
+      "Animation & Motion": "Animação & Motion",
+      "Character Design": "Design de Personagens",
+      "Video Editing": "Edição de Vídeo",
+      "Journalism & Media": "Jornalismo & Mídia",
+      "Who I Am": "Quem Sou Eu",
+      "I’m Mateus Pereira, a 19-year-old multimedia creator based between Portugal and Brazil. Currently studying Journalism at Cásper Líbero, I bridge creative art with powerful narrative communication.": "Sou Mateus Pereira, criador multimídia de 19 anos vivendo entre Portugal e Brasil. Atualmente cursando Jornalismo na Cásper Líbero, uno arte criativa e comunicação narrativa marcante.",
+      "What I Do": "O Que Faço",
+      "From 2D character animation and motion graphics to institutional video editing and visual identity, I create compelling visual media tailored for engagement.": "De animação de personagens 2D e motion graphics até edição de vídeo institucional e identidade visual, crio mídias visuais focadas em impacto e engajamento.",
+      "Background": "Minha Trajetória",
+      "Formed in Multimedia at ESAB in Coimbra and experienced as a Motion Designer & Video Editor at TUMO Coimbra, bringing real-world creative project execution.": "Com formação em Multimídia pela ESAB em Coimbra e experiência como Motion Designer & Editor no TUMO Coimbra, trago bagagem prática na execução de projetos criativos.",
+      "Explore Work": "Ver Trabalhos",
+      "Get in Touch": "Entrar em Contato",
+      "25 de Abril — Carnation Animation Process": "25 de Abril — Processo de Animação do Cravo",
+      "Animation of a Carnation developed at TUMO Coimbra to commemorate the 25th of April Revolution in Portugal. Designed to be displayed in a carousel exhibit, this series illustrates the frame-by-frame evolution of the flower’s blooming sequence.": "Animação de um cravo desenvolvida no TUMO Coimbra em homenagem à Revolução dos Cravos, de 25 de Abril, em Portugal. Criada para ser exibida em uma exposição em carrossel, esta série ilustra, quadro a quadro, a evolução do desabrochar da flor.",
+      "Stage 1: Line Art & Keyframes": "Etapa 1: Traço e Animação Base",
+      "Initial rough animation and timing breakdown of the carnation.": "Animação inicial em linhas (sketch) definindo o movimento do cravo.",
+      "Stage 2: Color & In-Betweening": "Etapa 2: Colorização e Fluidez",
+      "Adding color fill and smoothing out the frame transitions.": "Preenchimento de cor e suavização da transição entre fotogramas.",
+      "Stage 3: Final Render": "Etapa 3: Versão Final",
+      "Final animation project developed during the 12º PM at Escola Secundária Avelar Brotero, as part of my Prova de Aptidão Profissional (PAP).": "Projeto final de animação desenvolvido durante o 12º PM na Escola Secundária Avelar Brotero, como parte da minha Prova de Aptidão Profissional (PAP).",
+      "TUMO Coimbra — Character Design": "TUMO Coimbra — Design de Personagens",
+      "Character designs created during my time at TUMO Coimbra for different educational areas of the center. The characters were developed as a cohesive visual set, with variations and poses designed to represent each area.": "Personagens criados durante meu período no TUMO Coimbra para diferentes áreas educacionais do centro. Os personagens foram desenvolvidos como um conjunto visual coeso, com variações e poses pensadas para representar cada área.",
+      "Animation": "Animação",
+      "Character created for the Animation area.": "Personagem criado para a área de Animação.",
+      "Cinema": "Cinema",
+      "Character created for the Cinema area.": "Personagem criado para a área de Cinema.",
+      "Cinema — Variation": "Cinema — Variação",
+      "Additional character design for the Cinema area.": "Design adicional de personagem para a área de Cinema.",
+      "Design": "Design",
+      "Character created for the Design area.": "Personagem criado para a área de Design.",
+      "Design — Variation": "Design — Variação",
+      "Additional character design for the Design area.": "Design adicional de personagem para a área de Design.",
+      "Photography": "Fotografia",
+      "Character created for the Photography area.": "Personagem criado para a área de Fotografia.",
+      "Photography — Variation": "Fotografia — Variação",
+      "Additional character design for the Photography area.": "Design adicional de personagem para a área de Fotografia.",
+      "Games": "Jogos",
+      "Character created for the Games area.": "Personagem criado para a área de Jogos.",
+      "Games — Variation": "Jogos — Variação",
+      "Additional character design for the Games area.": "Design adicional de personagem para a área de Jogos.",
+      "Music": "Música",
+      "Character created for the Music area.": "Personagem criado para a área de Música.",
+      "Programming": "Programação",
+      "Character created for the Programming area.": "Personagem criado para a área de Programação.",
+      "Robotics": "Robótica",
+      "Character created for the Robotics area.": "Personagem criado para a área de Robótica.",
+      "Prototype & First Version": "Protótipo e Primeira Versão",
+      "This image shows the first prototypes of the characters, before the final designs presented above. It records the initial visual exploration and the direction from which the character set was developed.": "Esta imagem mostra os primeiros protótipos dos personagens, antes dos designs finais apresentados acima. Ela registra a exploração visual inicial e o caminho a partir do qual o conjunto de personagens foi desenvolvido.",
+      "The Photography character was developed last and had a shorter production timeframe, which is why its development is less represented in the prototype stage.": "O personagem de Fotografia foi desenvolvido por último e teve um prazo de produção mais curto, por isso seu desenvolvimento está menos representado na etapa de protótipo.",
+      "25 de Abril — TUMO Coimbra": "25 de Abril — TUMO Coimbra",
+      "Promotional artwork created for the 25th of April celebration at TUMO Coimbra.": "Arte promocional desenvolvida para a comemoração do 25 de Abril no TUMO Coimbra.",
+      "Experience": "Experiência",
+      "Education": "Formação",
+      "Motion Designer & Video Editor": "Motion Designer & Editor de Vídeo",
+      "March 2025 – July 2025": "Março de 2025 – Julho de 2025",
+      "Participated in creative meetings to define content and events.": "Participei de reuniões criativas para definir conteúdos e eventos.",
+      "Created animations and videos for institutional campaigns.": "Criei animações e vídeos para campanhas institucionais.",
+      "Developed visual content for educational projects.": "Desenvolvi conteúdo visual para projetos educacionais.",
+      "Produced 2D animations applied to teaching.": "Produzi animações 2D aplicadas ao ensino.",
+      "Selected project in this portfolio": "Projeto selecionado neste portfólio",
+      "The character designs shown in Artworks were created for different educational areas of TUMO Coimbra, forming a cohesive visual set of characters and poses.": "Os personagens apresentados em Artes foram criados para diferentes áreas educacionais do TUMO Coimbra, formando um conjunto visual coeso de personagens e poses.",
+      "Bachelor's Degree in Journalism": "Bacharelado em Jornalismo",
+      "São Paulo, Brazil": "São Paulo, Brasil",
+      "Ongoing": "Em andamento",
+      "Professional Course in Multimedia": "Curso Profissional de Multimídia",
+      "Coimbra, Portugal": "Coimbra, Portugal",
+      "Software & Tools": "Software e Ferramentas",
+      "Adobe Creative Cloud": "Pacote Adobe",
+      "Artificial Intelligence": "Inteligência Artificial",
+      "Programming & Web": "Programação & Web",
+      "Microsoft Office": "Pacote Office",
+      "Welcome to my portfolio": "Bem-vindo ao meu portfólio",
+      "Artist · Motion Designer · Multimedia": "Artista · Motion Designer · Multimídia",
+      "Complete loop with detail, shown in the carousel exhibit.": "Loop completo e detalhado, exibido na exposição em carrossel.",
+      "Intermediate": "Intermediário",
+      "Basic": "Básico",
+      "Email": "E-mail",
+      "Final Motion Reel": "Motion reel final",
+      "Phone": "Telefone",
+      "Final animation · 12º PM": "Animação final · 12º PM",
+      "Watch on YouTube": "Assistir no YouTube",
+      "Play video": "Reproduzir vídeo"
+};
+
+    const SKIP = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT']);
+    const nodes = [...document.querySelectorAll('body *')].filter(el =>
+      !SKIP.has(el.tagName) && el.children.length === 0 && el.textContent.trim()
+    );
+    nodes.forEach(el => { el.dataset.enText = el.textContent; });
+
+    const closeBtn = document.getElementById('modalClose');
+
+    function applyLanguage(lang) {
+      const pt = lang === 'pt-BR';
+      document.documentElement.lang = pt ? 'pt-BR' : 'en';
+
+      nodes.forEach(el => {
+        const original = el.dataset.enText;
+        const key = original.replace(/\s+/g, ' ').trim();
+        if (pt && PT[key]) {
+          const lead  = original.match(/^\s*/)[0];
+          const trail = original.match(/\s*$/)[0];
+          el.textContent = lead + PT[key] + trail;
+        } else {
+          el.textContent = original;
+        }
+      });
+
+      closeBtn.setAttribute('aria-label', pt ? 'Fechar' : 'Close');
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        const on = btn.dataset.lang === lang;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', String(on));
+      });
+      try { localStorage.setItem('portfolio-language', lang); } catch (_) {}
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(btn =>
+      btn.addEventListener('click', () => applyLanguage(btn.dataset.lang))
+    );
+
+    let saved = null;
+    try { saved = localStorage.getItem('portfolio-language'); } catch (_) {}
+    applyLanguage(saved === 'en' ? 'en' : 'pt-BR');
+  })();
+  </script>
+</body>
+</html>
